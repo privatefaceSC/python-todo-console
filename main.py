@@ -1,51 +1,84 @@
+import json
 import os
 
-name_file = "tasks.txt"
+class Task:
+    def __init__(self, title, status=False, deadline=None):
+        self.deadline = deadline
+        self.status = status
+        self.title = title
 
-if not os.path.exists(name_file):
-    with open(name_file, "w", encoding="utf-8") as file:
-        pass
-    print("Файл создан")
-def add_choice(name: str):
-    if name.strip():
-        with open(name_file, "a", encoding="utf-8") as file:
-            file.write(name + "\n")
-        print("Задача добавлена")
-    else:
-        print("Название не может быть пустым!")
+    def to_dict(self):
+        dictionary = {"title": self.title, "status": self.status, "deadline": self.deadline}
+        return dictionary
 
+    def mark_done(self):
+        self.status = not self.status
 
-def delete_choice(number: int):
-    if number > 0:
-        with open(name_file, "r", encoding="utf-8") as file:
-            text = file.readlines()
-        if len(text) < number:
-            print("Такой задачи нету в списке")
+    def __str__(self):
+        if self.status:
+            return f"[✅] {self.title}"
         else:
-            text.pop(number - 1)
+            return f"[ ] {self.title}"
+
+class TaskManager:
+    def __init__(self, filename="tasks.json"):
+        self.tasks = []
+        self.filename = filename
+        self.load_tasks()
+
+    def load_tasks(self):
+        if not os.path.exists(self.filename):
+            return
+        with open(self.filename, encoding="utf-8") as file:
+            data = json.load(file)
+            for item in data:
+                self.tasks.append(Task(item["title"], item["status"]))
+
+    def save_tasks(self):
+        data = [task.to_dict() for task in self.tasks]
+        with open(self.filename, "w", encoding="utf-8") as file:
+            json.dump(data, file, ensure_ascii=False, indent=2)
+
+
+    def add_task(self, title):
+        if title.strip():
+            self.tasks.append(Task(title))
+            self.save_tasks()
+            print("Задача добавлена")
+        else:
+            print("Не может быть пустая задача")
+
+    def delete_task(self, index):
+        if 0 < index <= len(self.tasks):
+            self.tasks.pop(index - 1)
+            self.save_tasks()
             print("Задача удалена")
-            with open(name_file, "w", encoding="utf-8") as file:
-                file.writelines(text)
-
-    else:
-        print("Такой задачи нету в списке")
-
-
-def display_tasks():
-    with open(name_file, "r", encoding="utf-8") as file:
-        text = file.readlines()
-        if text:
-            for i, task in enumerate(text):
-                print(f"{i + 1}: {task.rstrip()}")
         else:
-            print("Список пуст")
+            print("Такой задачи нет")
 
+    def select_task(self, index):
+        if 0 < index <= len(self.tasks):
+            self.tasks[index - 1].mark_done()
+            self.save_tasks()
+            print(f"Статус задачи был изменен")
+        else:
+            print("Такой задачи нет")
+
+    def show_tasks(self):
+        if not self.tasks:
+            print("Список пуст")
+            return
+        for i, task in enumerate(self.tasks, start=1):
+            print(f"{i}: {task}")
+
+manager = TaskManager()
 
 while True:
     print("Напишите 1 если хотите добавить задачу")
     print("Напишите 2 если хотите показать ваши задачи")
     print("Напишите 3 если хотите удалить задачу")
     print("Напишите 4 если хотите выход")
+    print("Напишите 5 если хотите пометить что выполнили какую то задачу")
     try:
         choice = int(input("Выбор: "))
     except ValueError:
@@ -53,9 +86,9 @@ while True:
         continue
     if choice == 1:
         task_name = input("Напишите название задачи: ")
-        add_choice(task_name)
+        manager.add_task(task_name)
     elif choice == 2:
-        display_tasks()
+        manager.show_tasks()
     elif choice == 3:
         while True:
             try:
@@ -63,7 +96,16 @@ while True:
             except ValueError:
                 print("Введите пожалуйста цифру")
                 continue
-            delete_choice(task_selection)
+            manager.delete_task(task_selection)
+            break
+    elif choice == 5:
+        while True:
+            try:
+                task_selection = int(input("Введите номер задачи у которй хотите поменять статус: "))
+            except ValueError:
+                print("Введите пожалуйста цифру")
+                continue
+            manager.select_task(task_selection)
             break
     elif choice == 4:
         break

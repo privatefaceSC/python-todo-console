@@ -10,3 +10,5 @@ wheels/
 .venv
 tasks.txt
 .idea/
+tasks.json
+test.py
