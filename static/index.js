@@ -1,33 +1,32 @@
-function loadTasks() {
-    fetch('http://127.0.0.1:8000/api/tasks')
-        .then(response => {
-            if (!response.ok) throw new Error('HTTP ' + response.status);
-            return response.json();
-        })
-        .then(tasks => {
-            const ulElement = document.getElementById("task-list");
-            ulElement.innerHTML = "";
+async function loadTasks() {
+    try {
+        const response = await fetch('http://127.0.0.1:8000/api/tasks')
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        const tasks = await response.json();
 
-            tasks.forEach((task, index) => {
-                const liElement = document.createElement("li");
-                liElement.textContent = (task.status ? "✅ " : "❌ ") + task.title;
+        const ulElement = document.getElementById("task-list");
+        ulElement.innerHTML = "";
 
-                const deleteBtn = document.createElement('button');
-                deleteBtn.textContent = 'Удалить';
-                deleteBtn.addEventListener('click', () => deleteTask(index));
+        tasks.forEach((task) => {
+            const liElement = document.createElement("li");
+            liElement.textContent = (task.status ? "✅ " : "❌ ") + task.title;
 
-                const statusBtn = document.createElement('button');
-                statusBtn.textContent = 'Поменять статус';
-                statusBtn.addEventListener('click', () => markTask(index));
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'Удалить';
+            deleteBtn.addEventListener('click', async () => await deleteTask(task.id));
 
-                liElement.append(deleteBtn, statusBtn);
-                ulElement.appendChild(liElement);
-            });
-        })
-        .catch(error => console.error('Ошибка загрузки:', error));
+            const statusBtn = document.createElement('button');
+            statusBtn.textContent = 'Поменять статус';
+            statusBtn.addEventListener('click', async () => await markTask(task.id));
+
+            liElement.append(deleteBtn, statusBtn);
+            ulElement.appendChild(liElement);
+        });
+    } catch(error) {
+    console.error('Ошибка загрузки:', error);}
 }
 
-function addTask() {
+async function addTask() {
     const inputElement = document.getElementById("task-input");
     const taskTitle = inputElement.value;
 
@@ -36,40 +35,44 @@ function addTask() {
         return;
     }
 
-    fetch('http://127.0.0.1:8000/api/tasks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: taskTitle })
-    })
-        .then(response => {
-            if (!response.ok) throw new Error('HTTP ' + response.status);
-            inputElement.value = "";
-            loadTasks();
-        })
-        .catch(error => {
-            console.error('Ошибка:', error);
-            alert("Не удалось добавить задачу");
+    try {
+
+        const response = await fetch('http://127.0.0.1:8000/api/tasks', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({title: taskTitle})
         });
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        inputElement.value = "";
+        await loadTasks();
+
+    } catch(error) {
+        console.error('Ошибка:', error);
+        alert("Не удалось добавить задачу");
+    }
 }
 
-function deleteTask(index) {
-    fetch(`http://127.0.0.1:8000/tasks/${index}`, {
-        method: 'DELETE'
-    })
-        .then(response => {
-            if (!response.ok) throw new Error('HTTP ' + response.status);
-            loadTasks();
-        })
-        .catch(error => console.error('Ошибка удаления:', error));
+async function deleteTask(id) {
+    try {
+        const response = await fetch(`http://127.0.0.1:8000/api/tasks/${id}`, {
+            method: 'DELETE'
+        });
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        await loadTasks();
+
+    } catch(error) {
+        console.error('Ошибка удаления:', error);
+    }
 }
-function markTask(index) {
-    fetch(`http://127.0.0.1:8000/tasks/${index}`, {
-        method: 'PATCH'
-    })
-        .then(response => {
-            if (!response.ok) throw new Error('HTTP ' + response.status);
-            loadTasks();
+async function markTask(id) {
+    try {
+        const response = await fetch(`http://127.0.0.1:8000/api/tasks/${id}`, {
+            method: 'PATCH'
         })
-        .catch(error => console.error('Ошибка удаления:', error));
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        await loadTasks();
+    } catch(error) {
+    console.error('Ошибка смены статуса:', error);
+    }
 }
 loadTasks();

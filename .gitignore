@@ -12,3 +12,4 @@ tasks.txt
 .idea/
 tasks.json
 test.py
+database.db
