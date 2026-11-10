@@ -1,6 +1,6 @@
 async function loadTasks() {
     try {
-        const response = await fetch('http://127.0.0.1:8000/api/tasks')
+        const response = await fetch('/api/tasks')
         if (!response.ok) throw new Error('HTTP ' + response.status);
         const tasks = await response.json();
 
@@ -37,7 +37,7 @@ async function addTask() {
 
     try {
 
-        const response = await fetch('http://127.0.0.1:8000/api/tasks', {
+        const response = await fetch('/api/tasks', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({title: taskTitle})
@@ -54,7 +54,7 @@ async function addTask() {
 
 async function deleteTask(id) {
     try {
-        const response = await fetch(`http://127.0.0.1:8000/api/tasks/${id}`, {
+        const response = await fetch(`/api/tasks/${id}`, {
             method: 'DELETE'
         });
         if (!response.ok) throw new Error('HTTP ' + response.status);
@@ -66,7 +66,7 @@ async function deleteTask(id) {
 }
 async function markTask(id) {
     try {
-        const response = await fetch(`http://127.0.0.1:8000/api/tasks/${id}`, {
+        const response = await fetch(`/api/tasks/${id}`, {
             method: 'PATCH'
         })
         if (!response.ok) throw new Error('HTTP ' + response.status);
