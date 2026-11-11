@@ -1,0 +1,22 @@
+name: Deploy to Alwaysdata
+
+on:
+  push:
+    branches: [ main ] # Запускать при пуше в ветку main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          script: |
+            cd ~/www
+            git pull origin main
+            pip install -r requirements.txt
+            pkill -f uvicorn || true
+            pip install -r requirements.txt
