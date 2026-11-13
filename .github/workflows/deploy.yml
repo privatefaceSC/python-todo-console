@@ -17,6 +17,7 @@ jobs:
           script: |
             set -e
             cd ~/www
+            git checkout -- requirements.txt || true
             git pull --ff-only origin main
             ~/.local/bin/uv export --format requirements-txt --no-emit-project > requirements.txt
             pip install -r requirements.txt
