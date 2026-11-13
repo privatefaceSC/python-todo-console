@@ -1,6 +1,14 @@
+const token = localStorage.getItem('access_token')
+if (!token) {
+    window.location.href = '/';
+}
 async function loadTasks() {
     try {
-        const response = await fetch('/api/tasks')
+            const response = await fetch('/load/tasks', {
+            headers: {'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+        }
+    });
         if (!response.ok) throw new Error('HTTP ' + response.status);
         const tasks = await response.json();
 
@@ -37,10 +45,11 @@ async function addTask() {
 
     try {
 
-        const response = await fetch('/api/tasks', {
+        const response = await fetch('/add/tasks', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({title: taskTitle})
+            headers: {'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + localStorage.getItem('access_token')},
+            body: JSON.stringify({title: taskTitle.trim()})
         });
         if (!response.ok) throw new Error('HTTP ' + response.status);
         inputElement.value = "";
@@ -54,9 +63,12 @@ async function addTask() {
 
 async function deleteTask(id) {
     try {
-        const response = await fetch(`/api/tasks/${id}`, {
-            method: 'DELETE'
+        const response = await fetch(`/delete/tasks/${id}`, {
+            method: 'DELETE',
+            headers: {'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + localStorage.getItem('access_token')}
         });
+
         if (!response.ok) throw new Error('HTTP ' + response.status);
         await loadTasks();
 
@@ -66,9 +78,11 @@ async function deleteTask(id) {
 }
 async function markTask(id) {
     try {
-        const response = await fetch(`/api/tasks/${id}`, {
-            method: 'PATCH'
-        })
+        const response = await fetch(`/change/status/tasks/${id}`, {
+            method: 'PATCH',
+            headers: {'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + localStorage.getItem('access_token')}
+        });
         if (!response.ok) throw new Error('HTTP ' + response.status);
         await loadTasks();
     } catch(error) {

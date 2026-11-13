@@ -19,3 +19,4 @@ database.db
 # Git and docs (optional)
 .git/
 .gitignore
+.env

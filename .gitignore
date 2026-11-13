@@ -13,3 +13,4 @@ tasks.txt
 tasks.json
 test.py
 database.db
+.env
