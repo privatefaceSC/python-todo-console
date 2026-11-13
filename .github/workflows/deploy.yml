@@ -17,4 +17,7 @@ jobs:
           script: |
             cd ~/www
             git pull origin main
+            # Генерируем requirements.txt из uv.lock (используем полный путь, если uv не в PATH)
+            ~/.local/bin/uv export --format requirements-txt > requirements.txt
             pip install -r requirements.txt
+            pkill -f uvicorn || true
