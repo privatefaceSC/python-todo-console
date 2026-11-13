@@ -15,12 +15,10 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
+            set -e
             cd ~/www
-            rm -f requirements.txt
-            git pull origin main
+            git pull --ff-only origin main
             ~/.local/bin/uv export --format requirements-txt --no-emit-project > requirements.txt
             pip install -r requirements.txt
-            # Убиваем только процесс uvicorn, не трогая оболочку
-            kill -9 $(pgrep -f "uvicorn api:app" | head -n 1) 2>/dev/null || true
+            pkill -TERM -u "$(id -u)" -f '[u]vicorn api:app' || true
             sleep 2
-            exit 0
