@@ -20,6 +20,7 @@ jobs:
             git pull origin main
             ~/.local/bin/uv export --format requirements-txt --no-emit-project > requirements.txt
             pip install -r requirements.txt
-            (pkill -f uvicorn || true)
+            # Убиваем старый процесс, но не падаем, если его нет
+            nohup pkill -f "uvicorn api:app" > /dev/null 2>&1 &
             sleep 2
             exit 0
