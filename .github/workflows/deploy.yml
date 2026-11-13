@@ -20,6 +20,6 @@ jobs:
             git pull origin main
             ~/.local/bin/uv export --format requirements-txt --no-emit-project > requirements.txt
             pip install -r requirements.txt
-            pkill -f uvicorn || true
+            (pkill -f uvicorn || true)
             sleep 2
             exit 0
