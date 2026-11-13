@@ -16,8 +16,10 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
             cd ~/www
+            rm -f requirements.txt
             git pull origin main
-            # Генерируем requirements.txt из uv.lock (используем полный путь, если uv не в PATH)
-            ~/.local/bin/uv export --format requirements-txt > requirements.txt
+            ~/.local/bin/uv export --format requirements-txt --no-emit-project > requirements.txt
             pip install -r requirements.txt
             pkill -f uvicorn || true
+            sleep 2
+            exit 0
