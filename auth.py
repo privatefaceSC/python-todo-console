@@ -9,11 +9,11 @@ from dotenv import load_dotenv
 load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "15"))
 
 def create_access_token(data: dict):
     user_id_copy = data.copy()
-    expire = datetime.now(timezone.utc) + timedelta(minutes=60)
+    expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     user_id_copy.update({"exp": expire, "type": "access"})
     return jwt.encode(user_id_copy, SECRET_KEY, algorithm=ALGORITHM)
 
