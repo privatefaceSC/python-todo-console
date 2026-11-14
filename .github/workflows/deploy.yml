@@ -21,5 +21,9 @@ jobs:
             git pull --ff-only origin main
             ~/.local/bin/uv export --format requirements-txt --no-emit-project > requirements.txt
             pip install -r requirements.txt
-            pkill -TERM -u "$(id -u)" -f '[u]vicorn api:app' || true
-            sleep 2
+            exit 0
+
+      - name: Restart site on Alwaysdata
+        run: |
+          curl -X POST --basic --user "${{ secrets.ALWAYSDATA_API_KEY }} account=to-do:" \
+          https://api.alwaysdata.com/v1/site/${{ secrets.ALWAYSDATA_SITE_ID }}/restart/
