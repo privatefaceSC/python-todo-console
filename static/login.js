@@ -25,6 +25,7 @@ async function Login() {
             localStorage.setItem('access_token', data.access_token);
             window.location.href = '/tasks';
 
+
         } catch(error) {
             console.error('Ошибка:', error);
             alert("Не удалось войти");

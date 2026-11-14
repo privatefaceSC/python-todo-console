@@ -4,9 +4,8 @@ if (!token) {
 }
 async function loadTasks() {
     try {
-            const response = await fetch('/load/tasks', {
-            headers: {'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+            const response = await fetchWithAuth('/load/tasks', {
+            headers: {'Content-Type': 'application/json'
         }
     });
         if (!response.ok) throw new Error('HTTP ' + response.status);
@@ -45,10 +44,9 @@ async function addTask() {
 
     try {
 
-        const response = await fetch('/add/tasks', {
+        const response = await fetchWithAuth('/add/tasks', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + localStorage.getItem('access_token')},
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({title: taskTitle.trim()})
         });
         if (!response.ok) throw new Error('HTTP ' + response.status);
@@ -63,10 +61,9 @@ async function addTask() {
 
 async function deleteTask(id) {
     try {
-        const response = await fetch(`/delete/tasks/${id}`, {
+        const response = await fetchWithAuth(`/delete/tasks/${id}`, {
             method: 'DELETE',
-            headers: {'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + localStorage.getItem('access_token')}
+            headers: {'Content-Type': 'application/json'}
         });
 
         if (!response.ok) throw new Error('HTTP ' + response.status);
@@ -78,15 +75,53 @@ async function deleteTask(id) {
 }
 async function markTask(id) {
     try {
-        const response = await fetch(`/change/status/tasks/${id}`, {
+        const response = await fetchWithAuth(`/change/status/tasks/${id}`, {
             method: 'PATCH',
-            headers: {'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + localStorage.getItem('access_token')}
+            headers: {'Content-Type': 'application/json'}
         });
         if (!response.ok) throw new Error('HTTP ' + response.status);
         await loadTasks();
     } catch(error) {
     console.error('Ошибка смены статуса:', error);
     }
+}
+
+async function fetchWithAuth(url, options = {}) {
+    // 1. Берем текущий Access Token
+    let token = localStorage.getItem('access_token');
+
+    // Добавляем заголовок Authorization
+    options.headers = {
+        ...options.headers,
+        'Authorization': 'Bearer ' + token
+    };
+
+    // 2. Делаем запрос
+    let response = await fetch(url, options);
+
+    // 3. Если токен умер (401)
+    if (response.status === 401) {
+        console.log("Access Token умер. Пробуем обновить...");
+        // Просто стучимся на /refresh. Браузер САМ прикрепит куки!
+        const refreshResponse = await fetch('/refresh/token/validation', { method: 'POST' });
+
+        // 4. Если Refresh тоже умер
+        if (!refreshResponse.ok) {
+            localStorage.clear(); // Удаляем все токены
+            window.location.href = '/';
+            throw new Error("Сессия истекла");
+        }
+
+        // 5. Если Refresh жив — сохраняем новые токены
+        const data = await refreshResponse.json();
+        localStorage.setItem('access_token', data.access_token);
+        // localStorage.setItem('refresh_token', data.refresh_token);
+
+        // 6. Повторяем исходный запрос с НОВЫМ токеном
+        options.headers['Authorization'] = 'Bearer ' + data.access_token;
+        response = await fetch(url, options);
+    }
+
+    return response;
 }
 loadTasks();
